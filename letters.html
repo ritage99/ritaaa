@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💌 Send Love to Ritage</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@200;300;400&family=Alex+Brush&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0d0a12;
+    --card:    rgba(255,255,255,0.04);
+    --border:  rgba(255,182,193,0.2);
+    --pink:    #ffb6c1;
+    --rose:    #e8405a;
+    --gold:    #f5c842;
+    --cream:   #fff5ee;
+    --muted:   rgba(255,245,238,0.45);
+    --purple:  #c084fc;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* floating stars */
+  .stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
+  .star {
+    position:absolute; border-radius:50%;
+    background:white; animation: tw var(--d) infinite;
+  }
+  @keyframes tw { 0%,100%{opacity:.08} 50%{opacity:.7} }
+
+  /* page wrapper */
+  .page { position:relative; z-index:1; max-width:700px; margin:0 auto; padding:3rem 1.2rem 5rem; }
+
+  /* ── HEADER ── */
+  .header { text-align:center; margin-bottom:3.5rem; }
+
+  .header-badge {
+    display:inline-block;
+    border:1px solid var(--border);
+    border-radius:50px;
+    padding:.4rem 1.4rem;
+    font-size:.65rem;
+    letter-spacing:4px;
+    color:var(--pink);
+    text-transform:uppercase;
+    margin-bottom:1.5rem;
+    background:rgba(255,182,193,.05);
+  }
+
+  .header h1 {
+    font-family:'Alex Brush', cursive;
+    font-size:clamp(2.8rem,10vw,5.5rem);
+    background:linear-gradient(135deg,var(--gold),var(--pink),var(--purple));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    filter:drop-shadow(0 0 25px rgba(255,182,193,.35));
+    line-height:1.1;
+  }
+
+  .header p {
+    margin-top:1rem;
+    color:var(--muted);
+    font-size:.85rem;
+    letter-spacing:2px;
+    font-weight:300;
+  }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:2.5rem 2rem;
+    backdrop-filter:blur(14px);
+    margin-bottom:2.5rem;
+  }
+
+  .form-card h2 {
+    font-family:'Playfair Display', serif;
+    font-size:1.3rem;
+    color:var(--cream);
+    margin-bottom:.4rem;
+  }
+
+  .form-card .sub {
+    color:var(--muted);
+    font-size:.75rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:2rem;
+  }
+
+  .field { margin-bottom:1.4rem; }
+
+  .field label {
+    display:block;
+    font-size:.7rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--pink);
+    margin-bottom:.5rem;
+  }
+
+  .field input,
+  .field textarea {
+    width:100%;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,182,193,.2);
+    border-radius:12px;
+    padding:.9rem 1.1rem;
+    color:var(--cream);
+    font-family:'Lato', sans-serif;
+    font-size:.95rem;
+    outline:none;
+    transition:border-color .3s, box-shadow .3s;
+    resize:none;
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    border-color:rgba(255,182,193,.6);
+    box-shadow:0 0 20px rgba(255,182,193,.1);
+  }
+
+  .field textarea { height:130px; }
+
+  .send-btn {
+    width:100%;
+    padding:1rem;
+    background:linear-gradient(135deg,var(--rose),var(--pink));
+    border:none;
+    border-radius:12px;
+    color:white;
+    font-family:'Lato', sans-serif;
+    font-size:.85rem;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    font-weight:400;
+    cursor:pointer;
+    box-shadow:0 0 30px rgba(232,64,90,.35);
+    transition:transform .2s, box-shadow .2s;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .send-btn:hover { transform:scale(1.02); box-shadow:0 0 45px rgba(232,64,90,.5); }
+  .send-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+  /* ── SUCCESS TOAST ── */
+  .toast {
+    display:none;
+    background:linear-gradient(135deg,rgba(232,64,90,.2),rgba(255,182,193,.1));
+    border:1px solid rgba(255,182,193,.3);
+    border-radius:16px;
+    padding:1.5rem;
+    text-align:center;
+    margin-top:1.5rem;
+  }
+
+  .toast.show { display:block; animation:fadeUp .5s forwards; }
+
+  .toast-icon { font-size:2.5rem; margin-bottom:.8rem; }
+
+  .toast p {
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    color:var(--cream);
+    font-size:1.1rem;
+  }
+
+  /* ── LETTERS WALL ── */
+  .wall-header {
+    text-align:center;
+    margin-bottom:2rem;
+  }
+
+  .wall-header h2 {
+    font-family:'Alex Brush', cursive;
+    font-size:clamp(2rem,6vw,3rem);
+    color:var(--pink);
+    filter:drop-shadow(0 0 10px rgba(255,182,193,.4));
+  }
+
+  .wall-header p {
+    color:var(--muted);
+    font-size:.7rem;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    margin-top:.4rem;
+  }
+
+  .letters-grid { display:flex; flex-direction:column; gap:1.2rem; }
+
+  .letter-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:1.8rem;
+    backdrop-filter:blur(10px);
+    transition:transform .3s, border-color .3s;
+    animation:fadeUp .5s forwards;
+    opacity:0;
+  }
+
+  .letter-card:hover {
+    transform:translateY(-4px);
+    border-color:rgba(255,182,193,.4);
+  }
+
+  @keyframes fadeUp {
+    from{opacity:0;transform:translateY(20px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  .letter-from {
+    display:flex;
+    align-items:center;
+    gap:.8rem;
+    margin-bottom:1rem;
+  }
+
+  .letter-avatar {
+    width:38px; height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--rose),var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    flex-shrink:0;
+  }
+
+  .letter-name {
+    font-family:'Playfair Display', serif;
+    color:var(--cream);
+    font-size:1rem;
+  }
+
+  .letter-time {
+    font-size:.65rem;
+    color:var(--muted);
+    letter-spacing:1px;
+    margin-top:.15rem;
+  }
+
+  .letter-body {
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    color:rgba(255,245,238,.8);
+    font-size:1rem;
+    line-height:1.85;
+  }
+
+  .letter-heart {
+    text-align:right;
+    margin-top:.8rem;
+    font-size:1.1rem;
+    opacity:.7;
+  }
+
+  /* empty state */
+  .empty {
+    text-align:center;
+    padding:3rem 1rem;
+    color:var(--muted);
+  }
+
+  .empty-icon { font-size:3rem; margin-bottom:1rem; opacity:.5; }
+  .empty p { font-size:.85rem; letter-spacing:2px; text-transform:uppercase; }
+
+  /* loading dots */
+  .loading {
+    display:none;
+    text-align:center;
+    padding:1rem;
+    color:var(--pink);
+    font-size:.75rem;
+    letter-spacing:3px;
+    text-transform:uppercase;
+  }
+
+  .loading.show { display:block; }
+
+  .dot { display:inline-block; animation:dotBounce 1.2s infinite; }
+  .dot:nth-child(2){ animation-delay:.2s; }
+  .dot:nth-child(3){ animation-delay:.4s; }
+
+  @keyframes dotBounce {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}
+  }
+
+  /* confetti canvas */
+  #conf { position:fixed;inset:0;pointer-events:none;z-index:99; }
+
+  /* divider */
+  .divider {
+    width:60px; height:1px;
+    background:linear-gradient(to right,transparent,var(--pink),transparent);
+    margin:3rem auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<canvas id="conf"></canvas>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-badge">✦ birthday letters ✦</div>
+    <h1>Write to Ritage</h1>
+    <p>Leave a love letter for her special day 🌸</p>
+  </header>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <h2>Your Letter 💌</h2>
+    <div class="sub">she will read every single word</div>
+
+    <div class="field">
+      <label>Your Name</label>
+      <input type="text" id="senderName" placeholder="What's your name?" maxlength="40">
+    </div>
+
+    <div class="field">
+      <label>Your Message</label>
+      <textarea id="msgInput" placeholder="Write something beautiful for Ritage… tell her how special she is 💖"></textarea>
+    </div>
+
+    <button class="send-btn" id="sendBtn" onclick="sendLetter()">
+      💌 &nbsp; Send My Letter to Ritage
+    </button>
+
+    <div class="toast" id="toast">
+      <div class="toast-icon">🎉</div>
+      <p>Your letter has been sent to Ritage! She'll love it 💖</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- LETTERS WALL -->
+  <div class="wall-header">
+    <h2>Letters for Ritage</h2>
+    <p>from everyone who loves her</p>
+  </div>
+
+  <div class="loading" id="loading">
+    <span class="dot">•</span>
+    <span class="dot">•</span>
+    <span class="dot">•</span>
+    loading letters
+  </div>
+
+  <div class="letters-grid" id="lettersGrid">
+    <div class="empty">
+      <div class="empty-icon">💌</div>
+      <p>Be the first to write to Ritage!</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STARS ──
+const starsEl = document.getElementById('stars');
+for(let i=0;i<120;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;
+    width:${Math.random()>0.7?3:2}px;height:${Math.random()>0.7?3:2}px;
+    --d:${1.5+Math.random()*3}s;animation-delay:${Math.random()*4}s`;
+  starsEl.appendChild(s);
+}
+
+// ── STORAGE KEY ──
+const STORAGE_KEY = 'ritage_birthday_letters';
+
+// ── LOAD LETTERS from localStorage ──
+function getLetters() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch(e) { return []; }
+}
+
+function saveLetters(letters) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(letters));
+}
+
+// ── RENDER LETTERS ──
+function renderLetters() {
+  const grid = document.getElementById('lettersGrid');
+  const letters = getLetters();
+
+  if (letters.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">💌</div><p>Be the first to write to Ritage!</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  // newest first
+  [...letters].reverse().forEach((l, i) => {
+    const card = document.createElement('div');
+    card.className = 'letter-card';
+    card.style.animationDelay = (i * 0.08) + 's';
+
+    const initial = l.name ? l.name[0].toUpperCase() : '💖';
+    const hearts = ['💖','💕','🌸','💗','✨','💝','🌺','💓'];
+    const heart = hearts[Math.floor(Math.random() * hearts.length)];
+
+    card.innerHTML = `
+      <div class="letter-from">
+        <div class="letter-avatar">${initial}</div>
+        <div>
+          <div class="letter-name">${escHtml(l.name)}</div>
+          <div class="letter-time">${l.time}</div>
+        </div>
+      </div>
+      <div class="letter-body">"${escHtml(l.message)}"</div>
+      <div class="letter-heart">${heart}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── SEND LETTER ──
+async function sendLetter() {
+  const name    = document.getElementById('senderName').value.trim();
+  const message = document.getElementById('msgInput').value.trim();
+
+  if (!name) { alert('Please enter your name 💖'); return; }
+  if (!message) { alert('Please write a message 💌'); return; }
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = '✨  Sending...';
+
+  // save to localStorage
+  const letters = getLetters();
+  const now = new Date();
+  letters.push({
+    name,
+    message,
+    time: now.toLocaleDateString('en-GB', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })
+  });
+  saveLetters(letters);
+
+  // show success
+  document.getElementById('toast').classList.add('show');
+  document.getElementById('senderName').value = '';
+  document.getElementById('msgInput').value = '';
+
+  btn.disabled = false;
+  btn.innerHTML = '💌 &nbsp; Send My Letter to Ritage';
+
+  // confetti!
+  spawnConfetti();
+  renderLetters();
+
+  setTimeout(() => document.getElementById('toast').classList.remove('show'), 4000);
+}
+
+// ── CONFETTI ──
+const conf = document.getElementById('conf');
+const cCtx = conf.getContext('2d');
+let pieces = [];
+
+function resizeConf() { conf.width=window.innerWidth; conf.height=window.innerHeight; }
+window.addEventListener('resize', resizeConf); resizeConf();
+
+const cColors = ['#ffb6c1','#f5c842','#e8405a','#c084fc','#a8f0d6','#fff5ee'];
+
+function spawnConfetti() {
+  for(let i=0;i<150;i++){
+    pieces.push({
+      x:Math.random()*conf.width, y:-10,
+      w:5+Math.random()*8, h:3+Math.random()*5,
+      color:cColors[Math.floor(Math.random()*cColors.length)],
+      vx:(Math.random()-.5)*5, vy:2+Math.random()*5,
+      rot:Math.random()*Math.PI*2, vrot:(Math.random()-.5)*.15,
+      op:1
+    });
+  }
+  if(pieces.length === 150) animConf();
+}
+
+function animConf() {
+  cCtx.clearRect(0,0,conf.width,conf.height);
+  pieces = pieces.filter(p=>p.op>0&&p.y<conf.height+20);
+  pieces.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.rot+=p.vrot; p.vy+=.05;
+    if(p.y>conf.height*.7) p.op-=.015;
+    cCtx.save();
+    cCtx.translate(p.x,p.y); cCtx.rotate(p.rot);
+    cCtx.globalAlpha=p.op; cCtx.fillStyle=p.color;
+    cCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    cCtx.restore();
+  });
+  if(pieces.length) requestAnimationFrame(animConf);
+}
+
+// ── INIT ──
+renderLetters();
+</script>
+</body>
+</html>
